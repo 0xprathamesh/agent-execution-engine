@@ -89,8 +89,8 @@ export const openApiSpec = {
             type: "object",
             description: "Type-specific payload. AGENT_TASK: { prompt, context? }. WEBHOOK: { url, method, body? }. GENERIC: any object.",
           },
-          workflowId: { type: "string", format: "uuid", nullable: true },
-          maxRetries: { type: "integer", minimum: 0, nullable: true },
+          workflowId: { type: "string", format: "uuid" },
+          maxRetries: { type: "integer", minimum: 0 },
         },
       },
       JobResponse: {

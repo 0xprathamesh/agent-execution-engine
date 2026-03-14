@@ -1,7 +1,9 @@
 import express from "express"
+import swaggerUi from "swagger-ui-express"
 import { ENV } from "./config/env"
 import routes from "./routes"
 import { errorHandler } from "./interfaces/http/middleware/error.middleware"
+import { openApiSpec } from "./openapi"
 import { prisma } from "./infra/db/prisma"
 import { redisConnection } from "./infra/redis/client"
 import { jobQueue } from "./infra/queue/queue"
@@ -17,6 +19,8 @@ process.on("SIGINT", async () => {
 
 const app = express()
 app.use(express.json())
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec))
 
 app.get("/health", (_, res) => {
   res.json({ status: "ok" })

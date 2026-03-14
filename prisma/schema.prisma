@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum JobStatus {
+  PENDING
+  QUEUED
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+enum JobType {
+  AGENT_TASK
+  WEBHOOK
+  GENERIC
+}
+
+model Workflow {
+  id        String   @id @default(uuid())
+  status    String
+  createdAt DateTime @default(now())
+  jobs      Job[]
+}
+
+model Job {
+  id            String     @id @default(uuid())
+  type          JobType
+  status        JobStatus  @default(PENDING)
+  payload       Json
+  result        Json?
+  errorMessage  String?
+  retries       Int        @default(0)
+  maxRetries    Int        @default(3)
+  queueJobId    String?    // BullMQ job id for correlation
+  workflowId    String?
+  workflow      Workflow?  @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([status, type])
+  @@index([workflowId])
+  @@index([queueJobId])
+}

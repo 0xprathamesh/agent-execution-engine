@@ -20,7 +20,7 @@ process.on("SIGINT", async () => {
 const app = express()
 app.use(express.json())
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec))
+app.use("/", swaggerUi.serve, swaggerUi.setup(openApiSpec))
 
 app.get("/health", (_, res) => {
   res.json({ status: "ok" })
@@ -28,7 +28,6 @@ app.get("/health", (_, res) => {
 
 app.use("/api/v1", routes)
 
-// Error handler last so it catches errors from routes
 app.use(errorHandler)
 
 app.listen(ENV.PORT, () => {

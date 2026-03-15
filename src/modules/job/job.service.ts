@@ -40,4 +40,12 @@ export const jobService = {
   async getJobById(id: string): Promise<JobResponse | undefined> {
     return jobRepository.getById(id)
   },
+
+  async listJobs(filters: import("./job.types").ListJobsFilters): Promise<import("./job.types").ListJobsResponse> {
+    const [jobs, total] = await Promise.all([
+      jobRepository.findMany(filters),
+      jobRepository.count(filters),
+    ])
+    return { jobs, total }
+  },
 }

@@ -53,5 +53,16 @@ export type JobResponse = {
   updatedAt: Date
 }
 
+export type ListJobsFilters = {
+  status?: PrismaJobStatus
+  type?: PrismaJobType
+  limit?: number
+  offset?: number
+}
+
+export type ListJobsResponse = {
+  jobs: JobResponse[]
+  total: number
+}
 
 export type JobRecord = import("../../generated/prisma/client").Job

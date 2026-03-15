@@ -1,11 +1,15 @@
 import type { Request, Response } from "express"
 import { jobService } from "./job.service"
-import type { CreateJobInput } from "./job.types"
-import { JobType } from "../../generated/prisma/enums"
+import type { CreateJobInput, ListJobsFilters } from "./job.types"
+import { JobStatus, JobType } from "../../generated/prisma/enums"
 import { logger } from "../../utils/logger"
 
-function isJobType(value: string): value is CreateJobInput["type"] {
-  return Object.values(JobType).includes(value as CreateJobInput["type"])
+function isJobType(value: string): value is JobType {
+  return Object.values(JobType).includes(value as JobType)
+}
+
+function isJobStatus(value: string): value is JobStatus {
+  return Object.values(JobStatus).includes(value as JobStatus)
 }
 
 function parseCreateBody(body: unknown): CreateJobInput | { error: string } {
@@ -58,6 +62,39 @@ const jobController = {
       return
     }
     res.json(job)
+  },
+
+  async listJobs(req: Request, res: Response): Promise<void> {
+    const { status, type, limit, offset } = req.query
+
+    const filters: ListJobsFilters = {}
+
+    if (typeof status === "string" && isJobStatus(status)) {
+      filters.status = status
+    }
+    if (typeof type === "string" && isJobType(type)) {
+      filters.type = type
+    }
+    if (typeof limit === "string") {
+      const parsedLimit = parseInt(limit, 10)
+      if (!isNaN(parsedLimit)) {
+        filters.limit = parsedLimit
+      }
+    }
+    if (typeof offset === "string") {
+      const parsedOffset = parseInt(offset, 10)
+      if (!isNaN(parsedOffset)) {
+        filters.offset = parsedOffset
+      }
+    }
+
+    try {
+      const result = await jobService.listJobs(filters)
+      res.json(result)
+    } catch (err) {
+      logger.error(err, "listJobs failed")
+      res.status(500).json({ message: "Failed to list jobs" })
+    }
   },
 }
 

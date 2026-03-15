@@ -51,6 +51,33 @@ export const jobRepository = {
     return job ? toResponse(job) : undefined
   },
 
+  async findMany(filters: {
+    status?: JobStatus
+    type?: JobType
+    limit?: number
+    offset?: number
+  }): Promise<JobResponse[]> {
+    const jobs = await prisma.job.findMany({
+      where: {
+        status: filters.status,
+        type: filters.type,
+      },
+      take: filters.limit,
+      skip: filters.offset,
+      orderBy: { createdAt: "desc" },
+    })
+    return jobs.map(toResponse)
+  },
+
+  async count(filters: { status?: JobStatus; type?: JobType }): Promise<number> {
+    return prisma.job.count({
+      where: {
+        status: filters.status,
+        type: filters.type,
+      },
+    })
+  },
+
   async setQueued(id: string, queueJobId: string): Promise<JobRecord> {
     const job = await prisma.job.update({
       where: { id },

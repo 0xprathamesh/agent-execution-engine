@@ -20,7 +20,7 @@ process.on("SIGINT", async () => {
 const app = express()
 app.use(express.json())
 
-app.use("/", swaggerUi.serve, swaggerUi.setup(openApiSpec))
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec))
 
 app.get("/health", (_, res) => {
   res.json({ status: "ok" })

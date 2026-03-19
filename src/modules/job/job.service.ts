@@ -3,10 +3,29 @@ import { jobRepository } from "./job.repository"
 import type { CreateJobInput, JobResponse, QueueJobData } from "./job.types"
 import type { JobType } from "../../generated/prisma/enums"
 import { ENV } from "../../config/env"
+import type { JobStatus } from "../../generated/prisma/enums"
 
 const JOB_NAME = "process"
 
 export const jobService = {
+  async getJobs(filters: {
+    status?: JobStatus
+    type?: JobType
+    workflowId?: string
+    queueJobId?: string
+    startedAt?: Date
+    completedAt?: Date
+    limit?: number
+    offset?: number
+  }): Promise<{ jobs: JobResponse[], total: number }> { 
+const [jobs,total] = await Promise.all([
+  jobRepository.findAll(filters),
+  jobRepository.count(filters),
+])
+
+  return { jobs, total }
+  },
+
   async createJob<T extends JobType>(input: CreateJobInput<T>): Promise<JobResponse> {
     const job = await jobRepository.create({
       type: input.type,

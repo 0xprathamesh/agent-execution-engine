@@ -54,7 +54,12 @@ export const openApiSpec = {
         summary: "Get job by ID",
         tags: ["Jobs"],
         parameters: [
-          { name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } },
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
         ],
         responses: {
           "200": {
@@ -66,6 +71,32 @@ export const openApiSpec = {
             },
           },
           "404": { description: "Job not found" },
+        },
+      },
+    },
+    "/api/v1/job/job/{id}/cancel": {
+      post: {
+        summary: "Cancel job",
+        tags: ["Jobs"],
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: { type: "string", format: "uuid" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Job cancelled",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/JobResponse" },
+              },
+            },
+          },
+          "404": { description: "Job not found" },
+          "409": { description: "Job cannot be cancelled in current state" },
         },
       },
     },
@@ -87,7 +118,8 @@ export const openApiSpec = {
           },
           payload: {
             type: "object",
-            description: "Type-specific payload. AGENT_TASK: { prompt, context? }. WEBHOOK: { url, method, body? }. GENERIC: any object.",
+            description:
+              "Type-specific payload. AGENT_TASK: { prompt, context? }. WEBHOOK: { url, method, body? }. GENERIC: any object.",
           },
           workflowId: { type: "string", format: "uuid" },
           maxRetries: { type: "integer", minimum: 0 },
@@ -109,7 +141,8 @@ export const openApiSpec = {
           },
           result: {
             type: "object",
-            description: "Job result. Null until complete; then a free-form JSON object.",
+            description:
+              "Job result. Null until complete; then a free-form JSON object.",
             nullable: true,
             additionalProperties: true,
           },
@@ -126,4 +159,4 @@ export const openApiSpec = {
       },
     },
   },
-} as const
+} as const;

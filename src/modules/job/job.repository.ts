@@ -176,4 +176,19 @@ export const jobRepository = {
     });
     return job as JobRecord;
   },
+
+  async cancelIfPendingOrQueued(
+    id: string,
+    errorMessage: string,
+  ): Promise<boolean> {
+    const result = await prisma.job.updateMany({
+      where: { id, status: { in: ["PENDING", "QUEUED"] } },
+      data: {
+        status: "FAILED",
+        errorMessage,
+        completedAt: new Date(),
+      },
+    });
+    return result.count === 1;
+  },
 };

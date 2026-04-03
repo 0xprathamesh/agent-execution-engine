@@ -71,6 +71,29 @@ const jobController = {
     }
     res.json(job);
   },
+
+  async cancelJob(req: Request, res: Response): Promise<void> {
+    const rawId = req.params.id;
+    const id =
+      typeof rawId === "string" ? rawId : Array.isArray(rawId) ? rawId[0] : "";
+    if (!id) {
+      res.status(400).json({ message: "Missing job id" });
+      return;
+    }
+
+    const result = await jobService.cancelJob(id);
+    if (!result.ok) {
+      if (result.code === "NOT_FOUND") {
+        res.status(404).json({ message: result.message });
+        return;
+      }
+      res.status(409).json({ message: result.message });
+      return;
+    }
+
+    res.json(result.job);
+  },
+
   async getAllJobs(req: Request, res: Response): Promise<void> {
     const {
       status,

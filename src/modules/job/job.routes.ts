@@ -1,10 +1,14 @@
-import { Router } from "express"
-import { jobController } from "./job.controller"
+import { Router } from "express";
+import { jobController } from "./job.controller";
 
-const router = Router()
+const router = Router();
 
-router.post("/", (req, res) => void jobController.createJob(req, res))
-router.get("/:id", (req, res) => void jobController.getJob(req, res))
-router.get("/", (req, res) => void jobController.getAllJobs(req, res))
+router.post("/", (req, res) => void jobController.createJob(req, res));
+router.post(
+  "/:id/cancel",
+  (req, res) => void jobController.cancelJob(req, res),
+);
+router.get("/:id", (req, res) => void jobController.getJob(req, res));
+router.get("/", (req, res) => void jobController.getAllJobs(req, res));
 
-export default router
+export default router;

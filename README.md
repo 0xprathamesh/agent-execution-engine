@@ -2,6 +2,8 @@
 
 Job queue + worker backend. API enqueues jobs; a separate worker process consumes from Redis, runs processors, and syncs state to Postgres. Stuck-job recovery runs inside the worker.
 
+**In-depth architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — processes, data flow, state machine, file map, where to add features.
+
 **Stack:** Node, TypeScript, Express, Prisma (Postgres), BullMQ (Redis).
 
 ---

@@ -18,7 +18,7 @@ export type JobPayloadByType = {
 export type CreateJobInput<T extends PrismaJobType = PrismaJobType> = {
   type: T
   payload: JobPayloadByType[T]
-  workflowId?: string
+  workflowRunId?: string
   maxRetries?: number
 }
 
@@ -46,7 +46,7 @@ export type JobResponse = {
   retries: number
   maxRetries: number
   queueJobId: string | null
-  workflowId: string | null
+  workflowRunId: string | null
   startedAt: Date | null
   completedAt: Date | null
   createdAt: Date

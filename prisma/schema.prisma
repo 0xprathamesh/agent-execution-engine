@@ -16,6 +16,7 @@ enum JobStatus {
   RUNNING
   SUCCESS
   FAILED
+  CANCELLED
 }
 
 enum JobType {
@@ -23,12 +24,50 @@ enum JobType {
   WEBHOOK
   GENERIC
 }
+enum WorkflowLifecycleStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+enum WorkflowRunStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+enum NodeRunStatus {
+  PENDING
+  READY
+  QUEUED
+  RUNNING
+  SUCCESS
+  FAILED
+  SKIPPED
+  CANCELLED
+}
 
+enum EdgeConditionType {
+  ON_SUCCESS
+  ON_FAILURE
+  ALWAYS
+}
 model Workflow {
-  id        String   @id @default(uuid())
-  status    String
+  id          String   @id @default(uuid())
+  key         String
+  version     Int
+  name        String
+  description String?
+  status      WorkflowLifecycleStatus @default(ACTIVE)
+
   createdAt DateTime @default(now())
-  jobs      Job[]
+  updatedAt DateTime @updatedAt
+  nodes     WorkflowNode[]
+  edges     WorkflowEdge[]
+  runs      WorkflowRun[]
+
+  @@unique([key, version])
+  @@index([key,status])
 }
 
 model Job {
@@ -41,14 +80,109 @@ model Job {
   retries       Int        @default(0)
   maxRetries    Int        @default(3)
   queueJobId    String?    // BullMQ job id for correlation
-  workflowId    String?
-  workflow      Workflow?  @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+
+  //Dag run links
+  workflowRunId String?
+  workflowRun      WorkflowRun?  @relation(fields: [workflowRunId], references: [id], onDelete: SetNull)
+  nodeRun  WorkflowNodeRun? @relation("NodeRunJob")
   startedAt     DateTime?
   completedAt   DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
   @@index([status, type])
-  @@index([workflowId])
+  @@index([workflowRunId])
   @@index([queueJobId])
 }
+
+model WorkflowNode {
+  id          String   @id @default(uuid())
+  workflowId  String
+  nodeKey     String
+  type        JobType
+  payloadTemplate  Json
+  maxRetries   Int      @default(3)
+  timeoutMs    Int?
+  continueOnFailure  Boolean
+
+  workflow    Workflow @relation(fields: [workflowId], references: [id])
+  outgoingEdges WorkflowEdge[] @relation("EdgeFromNode")
+  incomingEdges WorkflowEdge[]   @relation("EdgeToNode")
+  nodeRuns  WorkflowNodeRun[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([workflowId, nodeKey])
+  @@index([workflowId])
+}
+
+
+model WorkflowEdge {
+  id          String            @id @default(uuid())
+  workflowId  String
+  fromNodeId  String
+  toNodeId    String
+  condition   EdgeConditionType @default(ON_SUCCESS)
+
+  workflow    Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  fromNode    WorkflowNode      @relation("EdgeFromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode      WorkflowNode      @relation("EdgeToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, fromNodeId, toNodeId, condition])
+  @@index([workflowId, fromNodeId])
+  @@index([workflowId, toNodeId])
+}
+
+/// One execution instance of a workflow definition
+model WorkflowRun {
+  id            String            @id @default(uuid())
+  workflowId    String
+  status        WorkflowRunStatus @default(PENDING)
+
+  input         Json?
+  output        Json?
+  errorMessage  String?
+
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  workflow      Workflow          @relation(fields: [workflowId], references: [id], onDelete: Restrict)
+  nodeRuns      WorkflowNodeRun[]
+  jobs          Job[]
+
+  @@index([workflowId, status, createdAt])
+}
+
+/// Runtime state for each node within a workflow run
+model WorkflowNodeRun {
+  id            String        @id @default(uuid())
+  workflowRunId String
+  nodeId        String
+  status        NodeRunStatus @default(PENDING)
+
+  attempt       Int           @default(0)
+  payload       Json          // resolved payload for this run
+  result        Json?
+  errorMessage  String?
+
+  queuedAt      DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  workflowRun   WorkflowRun   @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  node          WorkflowNode  @relation(fields: [nodeId], references: [id], onDelete: Restrict)
+
+  // optional back-reference to actual queue job row
+  jobId         String?       @unique
+  job           Job?          @relation("NodeRunJob", fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@unique([workflowRunId, nodeId])
+  @@index([workflowRunId, status])
+  @@index([nodeId, status])
+}
+

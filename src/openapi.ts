@@ -121,7 +121,7 @@ export const openApiSpec = {
             description:
               "Type-specific payload. AGENT_TASK: { prompt, context? }. WEBHOOK: { url, method, body? }. GENERIC: any object.",
           },
-          workflowId: { type: "string", format: "uuid" },
+          workflowRunId: { type: "string", format: "uuid" },
           maxRetries: { type: "integer", minimum: 0 },
         },
       },
@@ -150,7 +150,7 @@ export const openApiSpec = {
           retries: { type: "integer" },
           maxRetries: { type: "integer" },
           queueJobId: { type: "string", nullable: true },
-          workflowId: { type: "string", nullable: true },
+          workflowRunId: { type: "string", nullable: true },
           startedAt: { type: "string", format: "date-time", nullable: true },
           completedAt: { type: "string", format: "date-time", nullable: true },
           createdAt: { type: "string", format: "date-time" },

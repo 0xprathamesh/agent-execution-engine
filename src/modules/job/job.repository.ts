@@ -13,7 +13,7 @@ function toResponse(job: JobRecord): JobResponse {
     retries: job.retries,
     maxRetries: job.maxRetries,
     queueJobId: job.queueJobId ?? null,
-    workflowId: job.workflowId ?? null,
+    workflowRunId: job.workflowRunId ?? null,
     startedAt: job.startedAt ?? null,
     completedAt: job.completedAt ?? null,
     createdAt: job.createdAt,
@@ -21,11 +21,12 @@ function toResponse(job: JobRecord): JobResponse {
   };
 }
 
+
 export const jobRepository = {
   async findAll(filters: {
     status?: JobStatus;
     type?: JobType;
-    workflowId?: string;
+    workflowRunId?: string;
     queueJobId?: string;
     startedAt?: Date;
     completedAt?: Date;
@@ -50,7 +51,7 @@ export const jobRepository = {
   async count(filters: {
     status?: JobStatus;
     type?: JobType;
-    workflowId?: string;
+    workflowRunId?: string;
     queueJobId?: string;
     startedAt?: Date;
     completedAt?: Date;
@@ -68,14 +69,14 @@ export const jobRepository = {
   async create(params: {
     type: JobType;
     payload: import("../../generated/prisma/client").Prisma.InputJsonValue;
-    workflowId?: string;
+    workflowRunId?: string;
     maxRetries?: number;
   }): Promise<JobRecord> {
     const job = await prisma.job.create({
       data: {
         type: params.type,
         payload: params.payload,
-        workflowId: params.workflowId ?? undefined,
+        workflowRunId: params.workflowRunId ?? undefined,
         maxRetries: params.maxRetries ?? 3,
       },
     });

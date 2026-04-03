@@ -24,8 +24,8 @@ function parseCreateBody(body: unknown): CreateJobInput | { error: string } {
   if (typeof payload !== "object" || payload === null) {
     return { error: "payload must be an object" };
   }
-  const workflowId =
-    typeof o.workflowId === "string" ? o.workflowId : undefined;
+  const workflowRunId =
+    typeof o.workflowRunId === "string" ? o.workflowRunId : undefined;
   const maxRetries =
     typeof o.maxRetries === "number" &&
     Number.isInteger(o.maxRetries) &&
@@ -35,7 +35,7 @@ function parseCreateBody(body: unknown): CreateJobInput | { error: string } {
   return {
     type: type as CreateJobInput["type"],
     payload: payload as CreateJobInput["payload"],
-    workflowId,
+    workflowRunId,
     maxRetries,
   };
 }
@@ -98,7 +98,7 @@ const jobController = {
     const {
       status,
       type,
-      workflowId,
+      workflowRunId,
       queueJobId,
       startedAt,
       completedAt,
@@ -109,7 +109,7 @@ const jobController = {
     const filters: {
       status?: JobStatus;
       type?: JobType;
-      workflowId?: string;
+      workflowRunId?: string;
       queueJobId?: string;
       startedAt?: Date;
       completedAt?: Date;
@@ -138,8 +138,8 @@ const jobController = {
     if (type) {
       filters.type = type as JobType;
     }
-    if (workflowId) {
-      filters.workflowId = workflowId as string;
+    if (workflowRunId) {
+      filters.workflowRunId = workflowRunId as string;
     }
     if (queueJobId) {
       filters.queueJobId = queueJobId as string;

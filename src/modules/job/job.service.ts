@@ -19,7 +19,7 @@ export const jobService = {
   async getJobs(filters: {
     status?: JobStatus;
     type?: JobType;
-    workflowId?: string;
+    workflowRunId?: string;
     queueJobId?: string;
     startedAt?: Date;
     completedAt?: Date;
@@ -41,7 +41,7 @@ export const jobService = {
       type: input.type,
       payload:
         input.payload as import("../../generated/prisma/client").Prisma.InputJsonValue,
-      workflowId: input.workflowId,
+      workflowRunId: input.workflowRunId,
       maxRetries: input.maxRetries,
     });
 

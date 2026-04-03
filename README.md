@@ -30,7 +30,7 @@ npm run worker   # Worker + stuck-job recovery (separate process)
 | Phase | Scope | Status |
 |-------|--------|--------|
 | **1** | Basic job queue, basic worker, basic API | ✅ |
-| **2** | Workflow DAG engine | ⬜ |
+| **2** | Workflow DAG engine | 🟨 |
 | **3** | Agent brain | ⬜ |
 | **4** | Distributed scaling | ⬜ |
 | **5** | Observability | ⬜ |
